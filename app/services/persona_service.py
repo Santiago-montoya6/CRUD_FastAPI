@@ -1,6 +1,7 @@
 from typing import Sequence
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func, text
 
 from ..models.persona import Persona
 from ..views.persona import PersonaCreate, PersonaUpdate
