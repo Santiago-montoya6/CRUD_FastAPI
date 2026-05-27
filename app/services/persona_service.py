@@ -212,7 +212,7 @@ def obtener_cumpleanios_mes(db: Session, mes: int):
     """Lógica Punto G: Filtra usando la función EXTRACT (que equivale a MONTH() en SQL)."""
     return db.query(Persona).filter(extract('month', Persona.birth_date) == mes).all()
 
-
+# Operación en lote optimizada con SQLAlchemy
 def desactivar_bulk(db: Session, lista_ids: list):
     """Lógica Punto H: Desactiva los usuarios que existan y reporta los que falten."""
     # 1. Consultar cuáles de los IDs enviados sí están en la base de datos
