@@ -264,3 +264,4 @@ def generar_csv_personas(db: Session):
     # Estructura del flujo de texto para Excel    
     output.seek(0)  # Movemos el cursor al inicio para que FastAPI pueda leer el archivo virtual
     return output
+    
