@@ -58,3 +58,9 @@ def resetear_base_datos(db: Session = Depends(get_db)):
         "message": "Base de datos limpiada. Se eliminaron todos los registros.",
         "deleted_count": contador_eliminados
     }
+
+@router.get("/estadisticas/dominios", status_code=status.HTTP_200_OK)
+def obtener_estadisticas_dominios(db: Session = Depends(get_db)):
+    """Endpoint para obtener el conteo de usuarios agrupados por dominio de correo."""
+    return persona_service.contar_por_dominio(db=db)
+
