@@ -108,3 +108,22 @@ def buscar_personas(db: Session, termino: str):
         (Persona.last_name.ilike(like)) |
         (Persona.email.ilike(like))
     ).all()
+
+
+def reporte_activos(db: Session):
+    results = db.query(
+        Persona.id,
+        Persona.email,
+        Persona.phone,
+        Persona.is_active
+    ).filter(Persona.is_active == True).all()
+
+    return [
+        {
+            "id": r.id,
+            "email": r.email,
+            "phone": r.phone,
+            "is_active": r.is_active
+        }
+        for r in results
+    ]
