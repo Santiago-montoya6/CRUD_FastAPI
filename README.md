@@ -131,3 +131,12 @@ curl -s -X DELETE http://127.0.0.1:8000/personas/1 -i
 
 - Si lo iniciaste en la misma terminal: usa `CTRL+C`.
 - Si corre en background, puedes cerrar esa terminal o matar el proceso de uvicorn (`pkill -f uvicorn`).
+
+
+## Desarrollo de Endpoints - Rafael Alexander Riatiga Durán
+
+Como parte del desarrollo colaborativo de este laboratorio, me encargué del diseño, validación e implementación de las siguientes operaciones masivas y de analítica:
+
+* **POST /personas/poblar**: Carga masiva de datos simulados utilizando la librería Faker (con validación de dominios de correo reales).
+* **DELETE /personas/reset**: Borrado total y limpieza de la base de datos con conteo de registros eliminados.
+* **GET /personas/estadisticas/dominios**: Consulta avanzada de agregación SQL para agrupar y contar usuarios según su proveedor de correo.
