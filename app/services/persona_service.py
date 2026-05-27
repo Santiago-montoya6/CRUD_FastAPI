@@ -80,6 +80,7 @@ def delete_persona(db: Session, persona_id: int) -> None:
 
 
 def estadisticas_edad(db: Session):
+    """Retorna la edad promedio, minima y maxima de todas las personas."""
     result = db.execute(
         text("""
             SELECT 
@@ -101,6 +102,8 @@ def estadisticas_edad(db: Session):
 
 
 def buscar_personas(db: Session, termino: str):
+    """Busca personas por nombre, apellido o email usando el termino dado."""
+
     like = f"%{termino}%"
 
     return db.query(Persona).filter(
@@ -111,6 +114,7 @@ def buscar_personas(db: Session, termino: str):
 
 
 def reporte_activos(db: Session):
+    """Retorna id, email, phone e is_active de los usuarios activos."""
     results = db.query(
         Persona.id,
         Persona.email,
