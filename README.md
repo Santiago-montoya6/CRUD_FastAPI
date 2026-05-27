@@ -131,3 +131,12 @@ curl -s -X DELETE http://127.0.0.1:8000/personas/1 -i
 
 - Si lo iniciaste en la misma terminal: usa `CTRL+C`.
 - Si corre en background, puedes cerrar esa terminal o matar el proceso de uvicorn (`pkill -f uvicorn`).
+
+
+## División de responsabilidades
+
+| Integrante | Endpoints implementados |
+|---|---|
+| Nombre 1 | ... |
+| Santiago Montoya Vanegas | GET /estadisticas/edad, GET /buscar/{termino}, GET /reporte/activos |
+| Nombre 3 | ... |

@@ -1,6 +1,7 @@
 from typing import Sequence
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func, text
 
 from ..models.persona import Persona
 from ..views.persona import PersonaCreate, PersonaUpdate
@@ -76,3 +77,57 @@ def delete_persona(db: Session, persona_id: int) -> None:
         raise PersonaNotFoundError()
     db.delete(obj)
     db.commit()
+
+
+def estadisticas_edad(db: Session):
+    """Retorna la edad promedio, minima y maxima de todas las personas."""
+    result = db.execute(
+        text("""
+            SELECT 
+                ROUND(AVG(TIMESTAMPDIFF(YEAR, birth_date, CURDATE()))) AS promedio,
+                MIN(TIMESTAMPDIFF(YEAR, birth_date, CURDATE())) AS minima,
+                MAX(TIMESTAMPDIFF(YEAR, birth_date, CURDATE())) AS maxima
+            FROM personas
+        """)
+    ).fetchone()
+    
+    if result is None or result[0] is None:
+        return {"edad_promedio": None, "edad_minima": None, "edad_maxima": None}
+    
+    return {
+        "edad_promedio": result[0],
+        "edad_minima": result[1],
+        "edad_maxima": result[2]
+    }
+
+
+def buscar_personas(db: Session, termino: str):
+    """Busca personas por nombre, apellido o email usando el termino dado."""
+
+    like = f"%{termino}%"
+
+    return db.query(Persona).filter(
+        (Persona.first_name.ilike(like)) |
+        (Persona.last_name.ilike(like)) |
+        (Persona.email.ilike(like))
+    ).all()
+
+
+def reporte_activos(db: Session):
+    """Retorna id, email, phone e is_active de los usuarios activos."""
+    results = db.query(
+        Persona.id,
+        Persona.email,
+        Persona.phone,
+        Persona.is_active
+    ).filter(Persona.is_active == True).all()
+
+    return [
+        {
+            "id": r.id,
+            "email": r.email,
+            "phone": r.phone,
+            "is_active": r.is_active
+        }
+        for r in results
+    ]

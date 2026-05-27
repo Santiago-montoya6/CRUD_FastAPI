@@ -43,3 +43,18 @@ def delete_persona(persona_id: int, db: Session = Depends(get_db)):
     """Delete a Persona by ID via service layer."""
     persona_service.delete_persona(db, persona_id)
     return None
+
+
+@router.get("/estadisticas/edad", summary="Estadísticas de edad de personas")
+def get_estadisticas_edad(db: Session = Depends(get_db)):
+    return persona_service.estadisticas_edad(db)
+
+
+@router.get("/buscar/{termino}", response_model=List[PersonaRead], summary="Buscar personas por nombre, apellido o email")
+def buscar_personas(termino: str, db: Session = Depends(get_db)):
+    return persona_service.buscar_personas(db, termino)
+
+
+@router.get("/reporte/activos", summary="Reporte de usuarios activos")
+def get_reporte_activos(db: Session = Depends(get_db)):
+    return persona_service.reporte_activos(db)
