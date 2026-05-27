@@ -8,7 +8,7 @@ from .errors import PersonaNotFoundError, EmailAlreadyExistsError
 
 from faker import Faker  
 
-fake = Faker('es_ES')  # <-- Inicializar Faker en español
+fake = Faker('es_ES')  # Inicializar Faker en español
 
 def create_persona(db: Session, payload: PersonaCreate) -> Persona:
     """Create a Persona ensuring unique email."""
@@ -82,5 +82,12 @@ def delete_persona(db: Session, persona_id: int) -> None:
 
 def poblar_base_datos(db: Session, cantidad: int):
     """Genera e inserta un bloque de personas con datos aleatorios."""
-    pass
+    for _ in range(cantidad):
+        # Generar los componentes básicos del nombre completo
+        primer_nombre = fake.first_name()
+        segundo_nombre = fake.first_name() if fake.boolean(chance_of_getting_true=50) else None
+        primer_apellido = fake.last_name()
+        segundo_apellido = fake.last_name()
+        
 
+        print(f"Simulado: {primer_nombre} {primer_apellido}")
