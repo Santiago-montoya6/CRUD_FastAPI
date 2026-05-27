@@ -117,3 +117,14 @@ def poblar_base_datos(db: Session, cantidad: int):
     # Confirmar la transacción en la base de datos
     db.commit()
 
+def reiniciar_tabla(db: Session) -> int:
+    """Elimina todos los registros de la tabla personas y retorna el conteo de borrados."""
+    # Contar registros actuales antes de la eliminación
+    contador_eliminados = db.query(Persona).count()
+    
+    # Ejecutar el borrado masivo de la tabla
+    db.query(Persona).delete()
+    db.commit()
+    
+    return contador_eliminados
+
