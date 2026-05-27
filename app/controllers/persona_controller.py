@@ -49,3 +49,12 @@ def poblar_personas(datos_in: PersonaPoblar, db: Session = Depends(get_db)):
     """Endpoint para poblar la base de datos con registros falsos."""
     persona_service.poblar_base_datos(db=db, cantidad=datos_in.cantidad)
     return {"message": f"Se ha iniciado la creacion de {datos_in.cantidad} personas de forma exitosa"}
+
+@router.delete("/reset", status_code=status.HTTP_200_OK)
+def resetear_base_datos(db: Session = Depends(get_db)):
+    """Endpoint para eliminar todos los registros de la tabla personas."""
+    contador_eliminados = persona_service.reiniciar_tabla(db=db)
+    return {
+        "message": "Base de datos limpiada. Se eliminaron todos los registros.",
+        "deleted_count": contador_eliminados
+    }
