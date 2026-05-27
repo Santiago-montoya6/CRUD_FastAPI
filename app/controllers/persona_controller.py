@@ -142,3 +142,4 @@ def exportar_csv(db: Session = Depends(get_db)):
         "Content-Disposition": 'attachment; filename="personas.csv"'
     }
     return StreamingResponse(buffer_csv, media_type="text/csv", headers=headers)
+    
