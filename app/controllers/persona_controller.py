@@ -80,3 +80,65 @@ def buscar_personas(termino: str, db: Session = Depends(get_db)):
 @router.get("/reporte/activos", summary="Reporte de usuarios activos")
 def get_reporte_activos(db: Session = Depends(get_db)):
     return persona_service.reporte_activos(db)
+
+
+# =====================================================================
+# ENDPOINTS DESARROLLADOS PARA EL LABORATORIO (PUNTOS G, H, I)
+# =====================================================================
+from pydantic import BaseModel
+
+# --- PUNTO G: Cumpleaños del Mes ---
+@router.get("/cumpleanios/mes/{numero_mes}", summary="Listar personas que cumplen años en un mes específico")
+def cumpleanios_mes(numero_mes: str, db: Session = Depends(get_db)):
+    """Retorna el listado de personas que cumplen años en el mes especificado (1-12)."""
+    # Validar si el texto ingresado es un número entero válido (evita ".abc")
+    try:
+        mes_int = int(numero_mes)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El mes debe ser un entero entre 1 y 12."
+        )
+    
+    # Validar que el número esté en el rango de los meses del año
+    if mes_int < 1 or mes_int > 12:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El mes debe ser un entero entre 1 y 12."
+        )
+        
+    return persona_service.obtener_cumpleanios_mes(db, mes_int)
+
+
+# Esquema necesario para que Postman pueda enviar la lista de IDs en formato JSON
+class BulkDesactivarInput(BaseModel):
+    ids: List[int]
+
+# --- PUNTO H: Desactivación Masiva ---
+@router.patch("/bulk/desactivar", summary="Desactivación masiva de usuarios por ID")
+def desactivar_masivo(datos_in: BulkDesactivarInput, db: Session = Depends(get_db)):
+    """Desactiva múltiples usuarios en una sola operación."""
+    # Validación: Si la lista está vacía o tiene más de 100 IDs
+    if not datos_in.ids or len(datos_in.ids) > 100:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La lista de IDs no puede estar vacía ni superar los 100 elementos."
+        )
+    return persona_service.desactivar_bulk(db, datos_in.ids)
+
+
+# --- PUNTO I: Exportar a CSV ---
+@router.get("/exportar/csv", summary="Exportar tabla de personas a archivo CSV")
+def exportar_csv(db: Session = Depends(get_db)):
+    """Retorna todos los registros de la tabla en formato CSV."""
+    from fastapi.responses import StreamingResponse
+    
+    # Llamamos a la lógica encargada de fabricar el archivo
+    buffer_csv = persona_service.generar_csv_personas(db)
+    
+    # Cabeceras HTTP obligatorias exigidas por la guía para que el navegador lo descargue
+    headers = {
+        "Content-Type": "text/csv",
+        "Content-Disposition": 'attachment; filename="personas.csv"'
+    }
+    return StreamingResponse(buffer_csv, media_type="text/csv", headers=headers)
