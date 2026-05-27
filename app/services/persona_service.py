@@ -77,3 +77,24 @@ def delete_persona(db: Session, persona_id: int) -> None:
         raise PersonaNotFoundError()
     db.delete(obj)
     db.commit()
+
+
+def estadisticas_edad(db: Session):
+    result = db.execute(
+        text("""
+            SELECT 
+                ROUND(AVG(TIMESTAMPDIFF(YEAR, birth_date, CURDATE()))) AS promedio,
+                MIN(TIMESTAMPDIFF(YEAR, birth_date, CURDATE())) AS minima,
+                MAX(TIMESTAMPDIFF(YEAR, birth_date, CURDATE())) AS maxima
+            FROM personas
+        """)
+    ).fetchone()
+    
+    if result is None or result[0] is None:
+        return {"edad_promedio": None, "edad_minima": None, "edad_maxima": None}
+    
+    return {
+        "edad_promedio": result[0],
+        "edad_minima": result[1],
+        "edad_maxima": result[2]
+    }
