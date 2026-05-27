@@ -7,6 +7,9 @@ from ..models.persona import Persona
 from ..views.persona import PersonaCreate, PersonaUpdate
 from .errors import PersonaNotFoundError, EmailAlreadyExistsError
 
+from faker import Faker  
+
+fake = Faker('es_ES')  # Inicializar Faker en español
 
 def create_persona(db: Session, payload: PersonaCreate) -> Persona:
     """Create a Persona ensuring unique email."""
@@ -131,3 +134,68 @@ def reporte_activos(db: Session):
         }
         for r in results
     ]
+import random
+from datetime import date
+
+def poblar_base_datos(db: Session, cantidad: int):
+    """Genera e inserta un bloque de personas con datos aleatorios."""
+    dominios_reales = ["gmail.com", "outlook.com", "hotmail.com", "yahoo.com"]
+    
+    for _ in range(cantidad):
+        primer_nombre = fake.first_name()
+        segundo_nombre = fake.first_name() if random.random() > 0.5 else None
+        primer_apellido = fake.last_name()
+        segundo_apellido = fake.last_name()
+        
+        nombre_base = f"{primer_nombre.lower()}.{primer_apellido.lower()}"
+        dominio = random.choice(dominios_reales)
+        email = f"{nombre_base}{random.randint(10, 99)}@{dominio}"
+        
+        phone = fake.phone_number()
+        birth_date = fake.date_of_birth(minimum_age=18, maximum_age=90)
+        is_active = fake.boolean(chance_of_getting_true=70)
+        notes = fake.sentence(nb_words=6) if random.random() > 0.3 else None
+        
+        # Crear la instancia del modelo SQLAlchemy
+        nueva_persona = Persona(
+            first_name=primer_nombre,
+            last_name=f"{primer_apellido} {segundo_apellido}".strip(),
+            email=email,
+            phone=phone,
+            birth_date=birth_date,
+            is_active=is_active,
+            notes=notes
+        )
+        db.add(nueva_persona)
+    
+    # Confirmar la transacción en la base de datos
+    db.commit()
+
+def reiniciar_tabla(db: Session) -> int:
+    """Elimina todos los registros de la tabla personas y retorna el conteo de borrados."""
+    # Contar registros actuales antes de la eliminación
+    contador_eliminados = db.query(Persona).count()
+    
+    # Ejecutar el borrado masivo de la tabla
+    db.query(Persona).delete()
+    db.commit()
+    
+    return contador_eliminados
+
+from sqlalchemy import func
+
+def contar_por_dominio(db: Session) -> dict:
+    """Extrae el dominio de los correos, los agrupa y retorna su conteo."""
+    # Equivalente a: SELECT SUBSTRING_INDEX(email, '@', -1) as dominio, COUNT(*) ... GROUP BY dominio
+    consulta = (
+        db.query(
+            func.substring_index(Persona.email, "@", -1).label("dominio"),
+            func.count(Persona.id).label("conteo")
+        )
+        .group_by("dominio")
+        .all()
+    )
+    
+    # Transformar el resultado de la consulta en el formato JSON requerido
+    return {dominio: conteo for dominio, conteo in consulta}
+
