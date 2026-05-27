@@ -90,7 +90,7 @@ from pydantic import BaseModel
 # --- PUNTO G: Cumpleaños del Mes ---
 @router.get("/cumpleanios/mes/{numero_mes}", summary="Listar personas que cumplen años en un mes específico")
 def cumpleanios_mes(numero_mes: str, db: Session = Depends(get_db)):
-    """Retorna el listado de personas que cumplen años en el mes especificado (1-12)."""
+    """Devuelve la lista filtrada de usuarios que cumplen años en el mes."""
     # Validar si el texto ingresado es un número entero válido (evita ".abc") 
     try:
         mes_int = int(numero_mes)
