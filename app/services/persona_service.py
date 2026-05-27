@@ -80,14 +80,28 @@ def delete_persona(db: Session, persona_id: int) -> None:
     db.delete(obj)
     db.commit()
 
+import random
+from datetime import date
+
 def poblar_base_datos(db: Session, cantidad: int):
     """Genera e inserta un bloque de personas con datos aleatorios."""
+    dominios_reales = ["gmail.com", "outlook.com", "hotmail.com", "yahoo.com"]
+    
     for _ in range(cantidad):
-        # Generar los componentes básicos del nombre completo
         primer_nombre = fake.first_name()
-        segundo_nombre = fake.first_name() if fake.boolean(chance_of_getting_true=50) else None
+        segundo_nombre = fake.first_name() if random.random() > 0.5 else None
         primer_apellido = fake.last_name()
         segundo_apellido = fake.last_name()
         
-
-        print(f"Simulado: {primer_nombre} {primer_apellido}")
+        # Construcción de email con dominio real corregido
+        nombre_base = f"{primer_nombre.lower()}.{primer_apellido.lower()}"
+        dominio = random.choice(dominios_reales)
+        email = f"{nombre_base}{random.randint(10, 99)}@{dominio}"
+        
+        phone = fake.phone_number()
+        birth_date = fake.date_of_birth(minimum_age=18, maximum_age=90)
+        is_active = fake.boolean(chance_of_getting_true=70)
+        notes = fake.sentence(nb_words=6) if random.random() > 0.3 else None
+        
+        # El mapeo al modelo final y la inyección se estructurarán a continuación
+        
