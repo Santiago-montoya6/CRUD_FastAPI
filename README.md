@@ -141,4 +141,4 @@ curl -s -X DELETE http://127.0.0.1:8000/personas/1 -i
 |---|---|
 | Rafael Alexander Riatiga | POST /personas/poblar, DELETE /personas/reset, GET /personas/estadisticas/dominios |
 | Santiago Montoya Vanegas | GET /estadisticas/edad, GET /buscar/{termino}, GET /reporte/activos |
-| Nombre 3 | ... |
+| Jonathan Ocampo | GET /personas/cumpleanios/mes/{numero_mes}, PATCH /personas/bulk/desactivar, GET /personas/exportar/csv |
