@@ -128,3 +128,20 @@ def reiniciar_tabla(db: Session) -> int:
     
     return contador_eliminados
 
+from sqlalchemy import func
+
+def contar_por_dominio(db: Session) -> dict:
+    """Extrae el dominio de los correos, los agrupa y retorna su conteo."""
+    # Equivalente a: SELECT SUBSTRING_INDEX(email, '@', -1) as dominio, COUNT(*) ... GROUP BY dominio
+    consulta = (
+        db.query(
+            func.substring_index(Persona.email, "@", -1).label("dominio"),
+            func.count(Persona.id).label("conteo")
+        )
+        .group_by("dominio")
+        .all()
+    )
+    
+    # Transformar el resultado de la consulta en el formato JSON requerido
+    return {dominio: conteo for dominio, conteo in consulta}
+
