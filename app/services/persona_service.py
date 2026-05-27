@@ -6,6 +6,9 @@ from ..models.persona import Persona
 from ..views.persona import PersonaCreate, PersonaUpdate
 from .errors import PersonaNotFoundError, EmailAlreadyExistsError
 
+from faker import Faker  
+
+fake = Faker('es_ES')  # <-- Inicializar Faker en español
 
 def create_persona(db: Session, payload: PersonaCreate) -> Persona:
     """Create a Persona ensuring unique email."""
