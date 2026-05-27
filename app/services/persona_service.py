@@ -93,7 +93,6 @@ def poblar_base_datos(db: Session, cantidad: int):
         primer_apellido = fake.last_name()
         segundo_apellido = fake.last_name()
         
-        # Construcción de email con dominio real corregido
         nombre_base = f"{primer_nombre.lower()}.{primer_apellido.lower()}"
         dominio = random.choice(dominios_reales)
         email = f"{nombre_base}{random.randint(10, 99)}@{dominio}"
@@ -103,5 +102,18 @@ def poblar_base_datos(db: Session, cantidad: int):
         is_active = fake.boolean(chance_of_getting_true=70)
         notes = fake.sentence(nb_words=6) if random.random() > 0.3 else None
         
-        # El mapeo al modelo final y la inyección se estructurarán a continuación
-        
+        # Crear la instancia del modelo SQLAlchemy
+        nueva_persona = Persona(
+            first_name=primer_nombre,
+            last_name=f"{primer_apellido} {segundo_apellido}".strip(),
+            email=email,
+            phone=phone,
+            birth_date=birth_date,
+            is_active=is_active,
+            notes=notes
+        )
+        db.add(nueva_persona)
+    
+    # Confirmar la transacción en la base de datos
+    db.commit()
+
