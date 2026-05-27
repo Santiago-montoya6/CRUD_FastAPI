@@ -42,3 +42,7 @@ class PersonaRead(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class PersonaPoblar(BaseModel):
+    cantidad: int = Field(..., ge=1, le=1000, description="Cantidad de personas a poblar (1-1000)")

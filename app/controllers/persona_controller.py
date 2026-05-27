@@ -2,8 +2,8 @@ from typing import List
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
+from ..views.persona import PersonaCreate, PersonaUpdate, PersonaRead, PersonaPoblar
 from ..database import get_db
-from ..views.persona import PersonaCreate, PersonaUpdate, PersonaRead
 from ..services import persona_service
 
 router = APIRouter(prefix="/personas", tags=["personas"])
@@ -43,3 +43,9 @@ def delete_persona(persona_id: int, db: Session = Depends(get_db)):
     """Delete a Persona by ID via service layer."""
     persona_service.delete_persona(db, persona_id)
     return None
+
+@router.post("/poblar", status_code=status.HTTP_201_CREATED)
+def poblar_personas(datos_in: PersonaPoblar, db: Session = Depends(get_db)):
+    """Endpoint para poblar la base de datos con registros falsos."""
+    persona_service.poblar_base_datos(db=db, cantidad=datos_in.cantidad)
+    return {"message": f"Se ha iniciado la creacion de {datos_in.cantidad} personas de forma exitosa"}

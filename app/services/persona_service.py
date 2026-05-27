@@ -76,3 +76,8 @@ def delete_persona(db: Session, persona_id: int) -> None:
         raise PersonaNotFoundError()
     db.delete(obj)
     db.commit()
+
+def poblar_base_datos(db: Session, cantidad: int):
+    """Genera e inserta un bloque de personas con datos aleatorios."""
+    pass
+
