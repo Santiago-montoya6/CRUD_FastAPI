@@ -98,3 +98,13 @@ def estadisticas_edad(db: Session):
         "edad_minima": result[1],
         "edad_maxima": result[2]
     }
+
+
+def buscar_personas(db: Session, termino: str):
+    like = f"%{termino}%"
+
+    return db.query(Persona).filter(
+        (Persona.first_name.ilike(like)) |
+        (Persona.last_name.ilike(like)) |
+        (Persona.email.ilike(like))
+    ).all()
