@@ -199,3 +199,67 @@ def contar_por_dominio(db: Session) -> dict:
     # Transformar el resultado de la consulta en el formato JSON requerido
     return {dominio: conteo for dominio, conteo in consulta}
 
+
+# =====================================================================
+# SERVICIOS DE BASE DE DATOS PARA EL LABORATORIO (PUNTOS G, H, I)
+# =====================================================================
+import csv
+import io
+from sqlalchemy import extract
+from app.models.persona import Persona  # El modelo que representa la tabla de MySQL
+
+def obtener_cumpleanios_mes(db: Session, mes: int):
+    """Lógica Punto G: Filtra usando la función EXTRACT (que equivale a MONTH() en SQL)."""
+    return db.query(Persona).filter(extract('month', Persona.birth_date) == mes).all()
+
+
+def desactivar_bulk(db: Session, lista_ids: list):
+    """Lógica Punto H: Desactiva los usuarios que existan y reporta los que falten."""
+    # 1. Consultar cuáles de los IDs enviados sí están en la base de datos
+    personas_existentes = db.query(Persona).filter(Persona.id.in_(lista_ids)).all()
+    ids_encontrados = [p.id for p in personas_existentes]
+    
+    # 2. Cambiar la columna is_active a False para los registros encontrados
+    for persona in personas_existentes:
+        persona.is_active = False
+        
+    # Guardamos los cambios en MySQL con un solo Commit de manera eficiente
+    db.commit()
+    
+    # 3. Calcular cuáles IDs NO existían usando diferencias de listas
+    ids_no_encontrados = list(set(lista_ids) - set(ids_encontrados))
+    
+    # Retornamos la estructura exacta que pide el PDF
+    return {
+        "message": "Operación completada.",
+        "desactivados": ids_encontrados,
+        "no_encontrados": ids_no_encontrados,
+        "total_desactivados": len(ids_encontrados)
+    }
+
+
+def generar_csv_personas(db: Session):
+    """Lógica Punto I: Construye un archivo plano de texto en memoria con formato CSV."""
+    personas = db.query(Persona).all()
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Escribimos las cabeceras requeridas en la guía
+    writer.writerow(["id", "first_name", "last_name", "email", "phone", "birth_date", "is_active", "notes"])
+    
+    # Escribimos los datos de cada fila
+    for p in personas:
+        writer.writerow([
+            p.id,
+            p.first_name,
+            p.last_name,
+            p.email,
+            p.phone,
+            str(p.birth_date),
+            p.is_active,
+            p.notes
+        ])
+        
+    output.seek(0)  # Movemos el cursor al inicio para que FastAPI pueda leer el archivo virtual
+    return output
