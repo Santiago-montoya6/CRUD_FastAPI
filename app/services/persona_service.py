@@ -1,19 +1,22 @@
 from typing import Sequence
+import random
+from datetime import date
+
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func, text
+
+from faker import Faker
 
 from ..models.persona import Persona
 from ..views.persona import PersonaCreate, PersonaUpdate
 from .errors import PersonaNotFoundError, EmailAlreadyExistsError
 
-from faker import Faker  
+fake = Faker('es_ES')
 
-fake = Faker('es_ES')  # Inicializar Faker en español
 
 def create_persona(db: Session, payload: PersonaCreate) -> Persona:
     """Create a Persona ensuring unique email."""
-    # Optimistic check; DB unique constraint is the final guard
     if db.query(Persona).filter(Persona.email == payload.email).first():
         raise EmailAlreadyExistsError()
     obj = Persona(
@@ -30,7 +33,6 @@ def create_persona(db: Session, payload: PersonaCreate) -> Persona:
         db.commit()
     except IntegrityError as e:
         db.rollback()
-        # Catch race conditions on unique email
         raise EmailAlreadyExistsError() from e
     db.refresh(obj)
     return obj
@@ -82,6 +84,54 @@ def delete_persona(db: Session, persona_id: int) -> None:
     db.commit()
 
 
+def poblar_base_datos(db: Session, cantidad: int):
+    """Genera e inserta un bloque de personas con datos aleatorios."""
+    dominios_reales = ["gmail.com", "outlook.com", "hotmail.com", "yahoo.com"]
+
+    for _ in range(cantidad):
+        primer_nombre = fake.first_name()
+        primer_apellido = fake.last_name()
+        segundo_apellido = fake.last_name()
+
+        nombre_base = f"{primer_nombre.lower()}.{primer_apellido.lower()}"
+        dominio = random.choice(dominios_reales)
+        email = f"{nombre_base}{random.randint(10, 99)}@{dominio}"
+
+        nueva_persona = Persona(
+            first_name=primer_nombre,
+            last_name=f"{primer_apellido} {segundo_apellido}".strip(),
+            email=email,
+            phone=fake.phone_number(),
+            birth_date=fake.date_of_birth(minimum_age=18, maximum_age=90),
+            is_active=fake.boolean(chance_of_getting_true=70),
+            notes=fake.sentence(nb_words=6) if random.random() > 0.3 else None
+        )
+        db.add(nueva_persona)
+
+    db.commit()
+
+
+def reiniciar_tabla(db: Session) -> int:
+    """Elimina todos los registros con TRUNCATE y retorna el conteo previo."""
+    contador = db.query(Persona).count()
+    db.execute(text("TRUNCATE TABLE personas"))
+    db.commit()
+    return contador
+
+
+def contar_por_dominio(db: Session) -> dict:
+    """Extrae el dominio de los correos, los agrupa y retorna su conteo."""
+    consulta = (
+        db.query(
+            func.substring_index(Persona.email, "@", -1).label("dominio"),
+            func.count(Persona.id).label("conteo")
+        )
+        .group_by("dominio")
+        .all()
+    )
+    return {dominio: conteo for dominio, conteo in consulta}
+
+
 def estadisticas_edad(db: Session):
     """Retorna la edad promedio, minima y maxima de todas las personas."""
     result = db.execute(
@@ -93,10 +143,10 @@ def estadisticas_edad(db: Session):
             FROM personas
         """)
     ).fetchone()
-    
+
     if result is None or result[0] is None:
         return {"edad_promedio": None, "edad_minima": None, "edad_maxima": None}
-    
+
     return {
         "edad_promedio": result[0],
         "edad_minima": result[1],
@@ -106,9 +156,7 @@ def estadisticas_edad(db: Session):
 
 def buscar_personas(db: Session, termino: str):
     """Busca personas por nombre, apellido o email usando el termino dado."""
-
     like = f"%{termino}%"
-
     return db.query(Persona).filter(
         (Persona.first_name.ilike(like)) |
         (Persona.last_name.ilike(like)) |
@@ -134,68 +182,4 @@ def reporte_activos(db: Session):
         }
         for r in results
     ]
-import random
-from datetime import date
-
-def poblar_base_datos(db: Session, cantidad: int):
-    """Genera e inserta un bloque de personas con datos aleatorios."""
-    dominios_reales = ["gmail.com", "outlook.com", "hotmail.com", "yahoo.com"]
-    
-    for _ in range(cantidad):
-        primer_nombre = fake.first_name()
-        segundo_nombre = fake.first_name() if random.random() > 0.5 else None
-        primer_apellido = fake.last_name()
-        segundo_apellido = fake.last_name()
-        
-        nombre_base = f"{primer_nombre.lower()}.{primer_apellido.lower()}"
-        dominio = random.choice(dominios_reales)
-        email = f"{nombre_base}{random.randint(10, 99)}@{dominio}"
-        
-        phone = fake.phone_number()
-        birth_date = fake.date_of_birth(minimum_age=18, maximum_age=90)
-        is_active = fake.boolean(chance_of_getting_true=70)
-        notes = fake.sentence(nb_words=6) if random.random() > 0.3 else None
-        
-        # Crear la instancia del modelo SQLAlchemy
-        nueva_persona = Persona(
-            first_name=primer_nombre,
-            last_name=f"{primer_apellido} {segundo_apellido}".strip(),
-            email=email,
-            phone=phone,
-            birth_date=birth_date,
-            is_active=is_active,
-            notes=notes
-        )
-        db.add(nueva_persona)
-    
-    # Confirmar la transacción en la base de datos
-    db.commit()
-
-def reiniciar_tabla(db: Session) -> int:
-    """Elimina todos los registros de la tabla personas y retorna el conteo de borrados."""
-    # Contar registros actuales antes de la eliminación
-    contador_eliminados = db.query(Persona).count()
-    
-    # Ejecutar el borrado masivo de la tabla
-    db.query(Persona).delete()
-    db.commit()
-    
-    return contador_eliminados
-
-from sqlalchemy import func
-
-def contar_por_dominio(db: Session) -> dict:
-    """Extrae el dominio de los correos, los agrupa y retorna su conteo."""
-    # Equivalente a: SELECT SUBSTRING_INDEX(email, '@', -1) as dominio, COUNT(*) ... GROUP BY dominio
-    consulta = (
-        db.query(
-            func.substring_index(Persona.email, "@", -1).label("dominio"),
-            func.count(Persona.id).label("conteo")
-        )
-        .group_by("dominio")
-        .all()
-    )
-    
-    # Transformar el resultado de la consulta en el formato JSON requerido
-    return {dominio: conteo for dominio, conteo in consulta}
 
