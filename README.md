@@ -139,4 +139,15 @@ Rafael implementó la carga masiva con Faker (validando rango 1–1000), el borr
 Santiago desarrolló las estadísticas de edad con funciones SQL, el buscador general con operador OR sobre nombre y email, y el reporte filtrado de usuarios activos con proyección de campos.
 Jonathan trabajó los filtros por mes de nacimiento con MONTH()/EXTRACT, la desactivación bulk con reporte de IDs no encontrados, y la exportación CSV con StreamingResponse y cabeceras HTTP correctas.
 
+<<<<<<< HEAD
 #Fin del documento de especificaciones
+=======
+| Integrante | Endpoints implementados |
+|---|---|
+| Rafael Alexander Riatiga | POST /personas/poblar, DELETE /personas/reset, GET /personas/estadisticas/dominios |
+| Santiago Montoya Vanegas | GET /estadisticas/edad, GET /buscar/{termino}, GET /reporte/activos |
+| Jonathan Ocampo | GET /personas/cumpleanios/mes/{numero_mes}, PATCH /personas/bulk/desactivar, GET /personas/exportar/csv |
+
+
+# Fin del documento de especificaciones
+>>>>>>> add49ad581688b97fda89e331856b1e89a5501c4
