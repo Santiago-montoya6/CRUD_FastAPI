@@ -135,10 +135,8 @@ curl -s -X DELETE http://127.0.0.1:8000/personas/1 -i
 
 ## División de responsabilidades
 
-## División de responsabilidades
+Rafael implementó la carga masiva con Faker (validando rango 1–1000), el borrado total de la tabla y las estadísticas agrupadas por dominio de correo.
+Santiago desarrolló las estadísticas de edad con funciones SQL, el buscador general con operador OR sobre nombre y email, y el reporte filtrado de usuarios activos con proyección de campos.
+Jonathan trabajó los filtros por mes de nacimiento con MONTH()/EXTRACT, la desactivación bulk con reporte de IDs no encontrados, y la exportación CSV con StreamingResponse y cabeceras HTTP correctas.
 
-| Integrante | Endpoints implementados |
-|---|---|
-| Rafael Alexander Riatiga | POST /personas/poblar, DELETE /personas/reset, GET /personas/estadisticas/dominios |
-| Santiago Montoya Vanegas | GET /estadisticas/edad, GET /buscar/{termino}, GET /reporte/activos |
-| Nombre 3 | ... |
+#Fin del documento de especificaciones
